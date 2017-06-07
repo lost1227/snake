@@ -152,6 +152,13 @@ var target = {
 
 function start(fps) {
   window.clearInterval(loop);
+  ctx.fillStyle = properties.background;
+  ctx.fillRect(0,0,canvas.width, canvas.height);
+  target.draw();
+  snake.draw();
+  for(var i = 0; i < snake.tails.length; i++) {
+    snake.tails[i].draw();
+  }
   loop = window.setInterval(run,1000/fps);
 }
 
