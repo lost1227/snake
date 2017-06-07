@@ -1,0 +1,227 @@
+<html>
+<head>
+  <style>
+  #snek {
+    display: block;
+    margin: auto;
+  }
+  #skore, #buttons, h1 {
+    display: block;
+    text-align: center;
+  }
+  </style>
+</head>
+<body>
+<h1>Snake!</h1>
+<p id="skore">Score: 0</p>
+<canvas width="500" height="500" id="snek"></canvas>
+<div id="buttons"><button id="Pause" onclick="pause();">Pause</button></div>
+<script>
+var canvas = document.getElementById("snek");
+var ctx = canvas.getContext("2d");
+var loop;
+
+var properties = {
+  background:"#000000",
+  fps:10
+}
+
+var scale = {
+  scale: 20,
+  x:function(x) { return x * this.scale; },
+  y:function(y) { return y * this.scale; },
+  xy:function(xy) { return [this.scale * xy[0], this.scale * xy[1] ]},
+  cW:function() { return canvas.width / this.scale; },
+  cH:function() { return canvas.height / this.scale; }
+}
+
+function tail(x,y,life) {
+  this.x = x;
+  this.y = y;
+  this.life = life;
+  this.color = "#FFFFFF";
+  this.draw = function() {
+    var fill = ctx.fillStyle;
+    ctx.fillStyle = this.color;
+    ctx.fillRect(scale.x(this.x), scale.y(this.y), scale.x(1), scale.y(1));
+    ctx.fillStyle = fill;
+  };
+  this.clear = function() {
+    var color = this.color;
+    this.color = properties.background;
+    this.draw();
+    this.color = color;
+  };
+  this.draw();
+}
+
+var snake = {
+  x:Math.floor(scale.cW()/2),
+  y:Math.floor(scale.cH()/2),
+  direction:"r",
+  color:"#FFFFFF",
+  move:function() {
+    switch(this.direction) {
+      case "r":
+        this.x += 1;
+        break;
+      case "l":
+        this.x -= 1;
+        break;
+      case "u":
+        this.y -= 1;
+        break;
+      case "d":
+        this.y += 1;
+        break;
+    }
+  },
+  draw:function() {
+    var fill = ctx.fillStyle;
+    ctx.fillStyle = this.color;
+    ctx.fillRect(scale.x(this.x), scale.y(this.y), scale.x(1), scale.y(1));
+    ctx.fillStyle = fill;
+  },
+  clear:function() {
+    var color = this.color;
+    this.color = properties.background;
+    this.draw();
+    this.color = color;
+  },
+  tails:[],
+  loopTail:function() {
+    var remove = [];
+    for(var i = 0; i < this.tails.length; i++) {
+      this.tails[i].life--;
+      if(this.tails[i].life < 0 ) {
+        remove.push(this.tails[i]);
+      }
+    }
+    for(var i = 0; i < remove.length; i++) {
+      this.tails.splice(this.tails.indexOf(remove[i]),1);
+      remove[i].clear();
+      delete remove[i];
+    }
+    for(var i = 0; i < this.tails.length; i++) {
+      if(this.tails[i].x == snake.x && this.tails[i].y == snake.y) {
+        reset();
+      }
+    }
+  }
+}
+
+var target = {
+  x:0,
+  y:0,
+  color:"#FF00FF",
+  draw:function() {
+    var fill = ctx.fillStyle;
+    ctx.fillStyle = this.color;
+    ctx.fillRect(scale.x(this.x), scale.y(this.y), scale.x(1), scale.y(1));
+    ctx.fillStyle = fill;
+  },
+  clear:function() {
+    var color = this.color;
+    this.color = properties.background;
+    this.draw();
+    this.color = color;
+  },
+  move:function() {
+    this.clear();
+    do {
+      this.x = Math.floor(Math.random() * scale.cW());
+    } while(Math.abs(this.x - snake.x) < 10);
+    do {
+      this.y = Math.floor(Math.random() * scale.cH());
+    } while(Math.abs(this.y - snake.y) < 10);
+    var redo = false;
+    for(var i = 0; i < snake.tails; i++) {
+      if(snake.tails[i].x == this.x && snake.tails[i].y == this.y) {
+        redo = i;
+      }
+    }
+    if(redo == false) {
+      this.draw();
+    } else {
+      snake.tails[i].draw();
+      this.move();
+    }
+  }
+
+}
+
+function start(fps) {
+  window.clearInterval(loop);
+  loop = window.setInterval(run,1000/fps);
+}
+
+function reset() {
+  for(var i = 0; i < snake.tails.length; i++) {
+    snake.tails[i].clear();
+    delete snake.tails[i];
+  }
+  snake.tails = [];
+  snake.x = Math.floor(scale.cW()/2);
+  snake.y = Math.floor(scale.cW()/2);
+  document.getElementById("skore").innerHTML = "Score: 0";
+}
+
+function run() {
+  snake.clear();
+  snake.tails.push(new tail(snake.x, snake.y, snake.tails.length));
+  snake.move();
+  if(snake.x < 0 || snake.x > scale.cW() || snake.y < 0 || snake.y > scale.cH()) {
+    reset();
+  }
+  if(snake.x == target.x && snake.y == target.y) {
+    target.move();
+    document.getElementById("skore").innerHTML = "Score: " + snake.tails.length;
+  } else {
+    snake.loopTail();
+  }
+  snake.draw();
+}
+
+var paused = false;
+function pause() {
+  if(paused) {
+    document.getElementById("Pause").innerHTML = "Pause";
+    start(properties.fps);
+    paused = false;
+  } else {
+    document.getElementById("Pause").innerHTML = "Play";
+    window.clearInterval(loop);
+    paused = true;
+  }
+}
+
+window.onload = function() {
+  ctx.fillStyle = properties.background;
+  ctx.fillRect(0,0,canvas.width, canvas.height);
+  target.move();
+  start(properties.fps);
+};
+
+document.onkeydown = function(e) {
+  switch(e.keyCode) {
+    case 27:
+      pause();
+      break;
+    case 37:
+      snake.direction = (snake.direction == "r")?snake.direction:"l";
+      break;
+    case 38:
+      snake.direction = (snake.direction == "d")?snake.direction:"u";
+      break;
+    case 39:
+      snake.direction = (snake.direction == "l")?snake.direction:"r";
+      break;
+    case 40:
+      snake.direction = (snake.direction == "u")?snake.direction:"d";
+      break;
+  }
+};
+
+</script>
+</body>
+</html>
