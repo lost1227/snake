@@ -15,7 +15,7 @@
 <h1>Snake!</h1>
 <p id="skore">Score: 0</p>
 <canvas width="500" height="500" id="snek"></canvas>
-<div id="buttons"><button id="Pause" onclick="pause();">Pause</button></div>
+<div id="buttons"><button id="Pause" onclick="pause();">Play</button></div>
 <script>
 var canvas = document.getElementById("snek");
 var ctx = canvas.getContext("2d");
@@ -182,7 +182,7 @@ function run() {
   snake.draw();
 }
 
-var paused = false;
+var paused = true;
 function pause() {
   if(paused) {
     document.getElementById("Pause").innerHTML = "Pause";
@@ -199,7 +199,6 @@ window.onload = function() {
   ctx.fillStyle = properties.background;
   ctx.fillRect(0,0,canvas.width, canvas.height);
   target.move();
-  start(properties.fps);
 };
 
 document.onkeydown = function(e) {
