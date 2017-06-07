@@ -215,15 +215,19 @@ document.onkeydown = function(e) {
       break;
     case 37:
       snake.direction = (snake.direction == "r")?snake.direction:"l";
+	  return false;
       break;
     case 38:
       snake.direction = (snake.direction == "d")?snake.direction:"u";
+	  return false;
       break;
     case 39:
       snake.direction = (snake.direction == "l")?snake.direction:"r";
+	  return false;
       break;
     case 40:
       snake.direction = (snake.direction == "u")?snake.direction:"d";
+	  return false;
       break;
   }
 };
