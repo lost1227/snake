@@ -107,6 +107,14 @@ var snake = {
         reset();
       }
     }
+  },
+  checkPointInTail:function(x,y) {
+	  for(var i = 0; i < this.tails.length; i++) {
+		  if(this.tails[i].x == x && this.tails[i].y == y) {
+			  return this.tails[i];
+		  }
+	  }
+	  return false;
   }
 }
 
@@ -127,25 +135,25 @@ var target = {
     this.color = color;
   },
   move:function() {
-    this.clear();
+    var toClear = [this.x, this.y];
     do {
       this.x = Math.floor(Math.random() * scale.cW());
     } while(Math.abs(this.x - snake.x) < 10);
     do {
       this.y = Math.floor(Math.random() * scale.cH());
     } while(Math.abs(this.y - snake.y) < 10);
-    var redo = false;
-    for(var i = 0; i < snake.tails; i++) {
-      if(snake.tails[i].x == this.x && snake.tails[i].y == this.y) {
-        redo = i;
-      }
-    }
-    if(redo == false) {
-      this.draw();
-    } else {
-      snake.tails[i].draw();
-      this.move();
-    }
+    
+	var issue = snake.checkPointInTail(this.x,this.y);
+	if(issue !== false) { 
+		issue.draw();
+		this.move();
+	} else {
+		var fill = ctx.fillStyle;
+		ctx.fillStyle = properties.background;
+		ctx.fillRect(scale.x(toClear[0]), scale.y(toClear[1]), scale.x(1), scale.y(1));
+		ctx.fillStyle = fill;
+		this.draw();
+	}
   }
 
 }
@@ -174,6 +182,7 @@ function reset() {
 }
 
 function run() {
+  if(useAI) { ai(); }
   snake.clear();
   snake.tails.push(new tail(snake.x, snake.y, snake.tails.length));
   snake.move();
@@ -200,6 +209,59 @@ function pause() {
     window.clearInterval(loop);
     paused = true;
   }
+}
+
+var useAI = false;
+function chooseDirectAI() {
+  if(snake.x > target.x) {
+    if(snake.direction == "r") {
+      snake.direction = (snake.y == scale.cH) ? "u" : "d";
+    } else {
+      snake.direction = "l";
+    }
+    return;
+  }
+  if(snake.x < target.x) {
+    if(snake.direction == "l") {
+      snake.direction = (snake.y == scale.cH) ? "u" : "d";
+    } else {
+      snake.direction = "r";
+    }
+    return;
+  }
+  if(snake.y < target.y) {
+    if(snake.direction == "u") {
+      snake.direction = (snake.x == scale.cW) ? "l" : "r";
+    } else {
+      snake.direction = "d";
+    }
+    return;
+  }
+  if(snake.y > target.y) {
+    if(snake.direction == "d") {
+      snake.direction = (snake.x == scale.cW) ? "l" : "r";
+    } else {
+      snake.direction = "u";
+    }
+  return;
+  }
+}
+function ai() {
+  chooseDirectAI();
+  var pos = [snake.x, snake.y];
+  snake.move();
+  for(var i = 0; i < snake.tails.length; i++) {
+	  if(snake.x == snake.tails[i].x && snake.y == snake.tails[i].y) {
+		  if(snake.direct == "u" || snake.direct == "d") {
+			snake.direct = (snake.x == scale.cW) ? "l" : "r";  
+		  }
+		  if(snake.direct == "l" || snake.direct == "r") {
+			  snake.direct = (snake.y == scale.cH) ? "u" : "d";
+		  }
+	  }
+  }
+  snake.x = pos[0];
+  snake.y = pos[1];
 }
 
 window.onload = function() {
