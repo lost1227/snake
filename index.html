@@ -142,9 +142,11 @@ var target = {
     do {
       this.y = Math.floor(Math.random() * scale.cH());
     } while(Math.abs(this.y - snake.y) < 10);
-    
+
 	var issue = snake.checkPointInTail(this.x,this.y);
-	if(issue !== false) { 
+	if(issue !== false) {
+    this.x = toClear[0];
+    this.y = toClear[1];
 		issue.draw();
 		this.move();
 	} else {
@@ -182,6 +184,7 @@ function reset() {
 }
 
 function run() {
+  keypressed = false;
   if(useAI) { ai(); }
   snake.clear();
   snake.tails.push(new tail(snake.x, snake.y, snake.tails.length));
@@ -250,15 +253,13 @@ function ai() {
   chooseDirectAI();
   var pos = [snake.x, snake.y];
   snake.move();
-  for(var i = 0; i < snake.tails.length; i++) {
-	  if(snake.x == snake.tails[i].x && snake.y == snake.tails[i].y) {
-		  if(snake.direct == "u" || snake.direct == "d") {
-			snake.direct = (snake.x == scale.cW) ? "l" : "r";  
-		  }
-		  if(snake.direct == "l" || snake.direct == "r") {
-			  snake.direct = (snake.y == scale.cH) ? "u" : "d";
-		  }
-	  }
+  if(snake.checkPointInTail(snake.x,snake.y) !== false) {
+    if(snake.direction == "u" || snake.direction == "d") {
+      snake.direction = (snake.x == scale.cW) ? "l" : "r";
+    }
+    if(snake.direction == "l" || snake.direction == "r") {
+      snake.direction = (snake.y == scale.cH) ? "u" : "d";
+    }
   }
   snake.x = pos[0];
   snake.y = pos[1];
@@ -270,27 +271,36 @@ window.onload = function() {
   target.move();
 };
 
+var keypressed = false;
 document.onkeydown = function(e) {
-  switch(e.keyCode) {
-    case 27:
-      pause();
-      break;
-    case 37:
-      snake.direction = (snake.direction == "r")?snake.direction:"l";
-	  return false;
-      break;
-    case 38:
-      snake.direction = (snake.direction == "d")?snake.direction:"u";
-	  return false;
-      break;
-    case 39:
-      snake.direction = (snake.direction == "l")?snake.direction:"r";
-	  return false;
-      break;
-    case 40:
-      snake.direction = (snake.direction == "u")?snake.direction:"d";
-	  return false;
-      break;
+  if(!keypressed) {
+    switch(e.keyCode) {
+      case 27:
+        pause();
+        break;
+      case 37:
+        snake.direction = (snake.direction == "r")?snake.direction:"l";
+        keypressed = true;
+  	    return false;
+        break;
+      case 38:
+        snake.direction = (snake.direction == "d")?snake.direction:"u";
+        keypressed = true;
+        return false;
+        break;
+      case 39:
+        snake.direction = (snake.direction == "l")?snake.direction:"r";
+        keypressed = true;
+  	    return false;
+        break;
+      case 40:
+        snake.direction = (snake.direction == "u")?snake.direction:"d";
+        keypressed = true;
+  	    return false;
+        break;
+    }
+  } else if(e.keycode == 27) {
+    pause();
   }
 };
 
