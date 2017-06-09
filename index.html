@@ -5,9 +5,12 @@
     display: block;
     margin: auto;
   }
-  #skore, #buttons, h1 {
+  #skore, #buttons, #range, h1 {
     display: block;
     text-align: center;
+  }
+  #fpsselector, #selected {
+    display: inline-block;
   }
   </style>
 </head>
@@ -16,6 +19,7 @@
 <p id="skore">Score: 0</p>
 <canvas width="500" height="500" id="snek"></canvas>
 <div id="buttons"><button id="Pause" onclick="pause();">Play</button></div>
+<div id="range"><input type="range" min="1" max="20" value="10" id="fpsselector"><p id="selected">10</p></div>
 <script>
 var canvas = document.getElementById("snek");
 var ctx = canvas.getContext("2d");
@@ -23,7 +27,7 @@ var loop;
 
 var properties = {
   background:"#000000",
-  fps:10
+  fps:function() { return document.getElementById("fpsselector").value; }
 }
 
 var scale = {
@@ -142,22 +146,20 @@ var target = {
     do {
       this.y = Math.floor(Math.random() * scale.cH());
     } while(Math.abs(this.y - snake.y) < 10);
-
-	var issue = snake.checkPointInTail(this.x,this.y);
-	if(issue !== false) {
-    this.x = toClear[0];
-    this.y = toClear[1];
-		issue.draw();
-		this.move();
-	} else {
-		var fill = ctx.fillStyle;
-		ctx.fillStyle = properties.background;
-		ctx.fillRect(scale.x(toClear[0]), scale.y(toClear[1]), scale.x(1), scale.y(1));
-		ctx.fillStyle = fill;
-		this.draw();
-	}
+  	var issue = snake.checkPointInTail(this.x,this.y);
+  	if(issue !== false) {
+      this.x = toClear[0];
+      this.y = toClear[1];
+  		issue.draw();
+  		this.move();
+  	} else {
+  		var fill = ctx.fillStyle;
+  		ctx.fillStyle = properties.background;
+  		ctx.fillRect(scale.x(toClear[0]), scale.y(toClear[1]), scale.x(1), scale.y(1));
+  		ctx.fillStyle = fill;
+  		this.draw();
+  	}
   }
-
 }
 
 function start(fps) {
@@ -205,7 +207,7 @@ var paused = true;
 function pause() {
   if(paused) {
     document.getElementById("Pause").innerHTML = "Pause";
-    start(properties.fps);
+    start(properties.fps());
     paused = false;
   } else {
     document.getElementById("Pause").innerHTML = "Play";
@@ -272,6 +274,10 @@ window.onload = function() {
 };
 
 var keypressed = false;
+document.getElementById("fpsselector").addEventListener("input", function() {
+  document.getElementById("selected").innerHTML = document.getElementById("fpsselector").value;
+  start(properties.fps());
+})
 document.onkeydown = function(e) {
   if(!keypressed) {
     switch(e.keyCode) {
