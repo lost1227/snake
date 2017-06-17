@@ -258,8 +258,7 @@ function ai() {
   if(snake.checkPointInTail(snake.x,snake.y) !== false) {
     if(snake.direction == "u" || snake.direction == "d") {
       snake.direction = (snake.x == scale.cW) ? "l" : "r";
-    }
-    if(snake.direction == "l" || snake.direction == "r") {
+    } else if(snake.direction == "l" || snake.direction == "r") {
       snake.direction = (snake.y == scale.cH) ? "u" : "d";
     }
   }
